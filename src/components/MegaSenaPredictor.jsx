@@ -26,6 +26,9 @@ const recentHotNumbers = [15, 4, 9, 27, 38, 54, 8, 5, 40, 37];
 // Virada hot numbers (most frequent in Mega da Virada)
 const viradaHotNumbers = [10, 41, 34, 32, 3, 5, 17, 35, 33, 36, 51, 58, 56];
 
+// PIX donation info
+const PIX_KEY = '7009a9a8-33e3-4edc-91b1-eee413b117a9';
+
 // Seeded random number generator based on timestamp
 function seededRandom(seed) {
   const x = Math.sin(seed++) * 10000;
@@ -201,6 +204,98 @@ function LotteryBall({ number, delay, isRevealed, isLucky, size = 'normal' }) {
   );
 }
 
+// Donation Modal Component
+function DonationModal({ isOpen, onClose }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyPix = () => {
+    navigator.clipboard.writeText(PIX_KEY);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      
+      {/* Modal */}
+      <div className="relative bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl border border-white/10">
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+        >
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        {/* Header */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 mb-4">
+            <span className="text-3xl">💚</span>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">Apoie o Projeto!</h2>
+          <p className="text-gray-300 text-sm">
+            Gostou? Ajude a manter o projeto no ar!
+          </p>
+        </div>
+
+        {/* QR Code */}
+        <div className="bg-white rounded-2xl p-4 mb-4">
+          <img 
+            src="./qrcode_pix.jpg" 
+            alt="QR Code PIX" 
+            className="w-full h-auto rounded-lg"
+          />
+        </div>
+
+        {/* PIX Key */}
+        <div className="mb-4">
+          <label className="block text-gray-400 text-xs mb-2 text-center">
+            Chave PIX (clique para copiar)
+          </label>
+          <button
+            onClick={handleCopyPix}
+            className={`w-full p-3 rounded-xl font-mono text-xs transition-all duration-200 ${
+              copied 
+                ? 'bg-green-500/20 border-2 border-green-500 text-green-400'
+                : 'bg-gray-800 border-2 border-gray-700 text-gray-300 hover:border-green-500 hover:text-white'
+            }`}
+          >
+            {copied ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Copiado!
+              </span>
+            ) : (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                {PIX_KEY}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Thank you message */}
+        <p className="text-center text-gray-500 text-xs">
+          Qualquer valor é bem-vindo! 🙏
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function MegaSenaPredictor() {
   const [mode, setMode] = useState('megasena'); // 'megasena', 'virada', 'shuffle'
   const [numberCount, setNumberCount] = useState(6);
@@ -211,6 +306,7 @@ export default function MegaSenaPredictor() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [luckyNumber, setLuckyNumber] = useState('');
   const [usedLuckyNumber, setUsedLuckyNumber] = useState(null);
+  const [showDonation, setShowDonation] = useState(false);
   
   // Shuffle mode states
   const [userNumbersInput, setUserNumbersInput] = useState('');
@@ -228,13 +324,11 @@ export default function MegaSenaPredictor() {
   };
 
   const parseUserNumbers = (input) => {
-    // Parse numbers from various formats: "01-10-57" or "01,10,57" or "01 10 57" or multiple lines
     const numbers = input
       .split(/[\n,\-\s]+/)
       .map(n => parseInt(n.trim()))
       .filter(n => !isNaN(n) && n >= 1 && n <= 60);
     
-    // Remove duplicates
     return [...new Set(numbers)];
   };
 
@@ -247,7 +341,6 @@ export default function MegaSenaPredictor() {
         return;
       }
       
-      // Calculate max possible combinations
       const factorial = (n) => n <= 1 ? 1 : n * factorial(n - 1);
       const combinations = (n, r) => factorial(n) / (factorial(r) * factorial(n - r));
       const maxCombinations = combinations(userNumbers.length, numberCount);
@@ -693,11 +786,25 @@ export default function MegaSenaPredictor() {
           </div>
         )}
 
+        {/* Donation Button */}
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => setShowDonation(true)}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold rounded-full shadow-lg shadow-green-500/30 transition-all duration-200 hover:scale-105 active:scale-95"
+          >
+            <span>💚</span>
+            <span>Apoiar com PIX</span>
+          </button>
+        </div>
+
         {/* Disclaimer */}
         <p className="text-center text-green-400/60 text-xs mt-6">
           ⚠️ Apenas para entretenimento. A Mega-Sena é um jogo de sorte e os resultados são completamente aleatórios.
         </p>
       </div>
+
+      {/* Donation Modal */}
+      <DonationModal isOpen={showDonation} onClose={() => setShowDonation(false)} />
     </div>
   );
 }
