@@ -439,6 +439,15 @@ export default function MegaSenaPredictor() {
                 ? 'Baseado em 22 sorteios da Mega da Virada (1998-2024)' 
                 : `Baseado em ${(2954).toLocaleString()} sorteios históricos (1996-2025)`}
           </p>
+          
+          {/* Donation Button */}
+          <button
+            onClick={() => setShowDonation(true)}
+            className="mt-4 inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-medium text-sm rounded-full shadow-lg shadow-green-500/30 transition-all duration-200 hover:scale-105 active:scale-95"
+          >
+            <span>💚</span>
+            <span>Apoiar com PIX</span>
+          </button>
         </div>
 
         {/* Main Card */}
@@ -466,7 +475,7 @@ export default function MegaSenaPredictor() {
                       : 'text-purple-200 hover:text-white'
                   }`}
                 >
-                  🎆 Virada
+                  🎆 Mega da Virada
                 </button>
                 <button
                   onClick={() => setMode('shuffle')}
@@ -785,17 +794,6 @@ export default function MegaSenaPredictor() {
             </ul>
           </div>
         )}
-
-        {/* Donation Button */}
-        <div className="mt-6 text-center">
-          <button
-            onClick={() => setShowDonation(true)}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold rounded-full shadow-lg shadow-green-500/30 transition-all duration-200 hover:scale-105 active:scale-95"
-          >
-            <span>💚</span>
-            <span>Apoiar com PIX</span>
-          </button>
-        </div>
 
         {/* Disclaimer */}
         <p className="text-center text-green-400/60 text-xs mt-6">
